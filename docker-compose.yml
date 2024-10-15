@@ -1,0 +1,61 @@
+services:
+
+  nginx:
+    container_name: ${PROJECT_NAME}-nginx
+    build:
+      context: docker/nginx
+      dockerfile: Dockerfile
+      args:
+        WORKDIR: ${WORKDIR}
+    restart: unless-stopped
+    volumes:
+      - ./Api/public:/var/www/public:rw
+    ports:
+      - "${NGINX_PORT}:80"
+    depends_on:
+      - php
+    networks:
+      - bridge-network
+
+  php:
+    container_name: ${PROJECT_NAME}-php
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        LOCAL_USER: ${LOCAL_USER}
+        WORKDIR: ${WORKDIR}
+        DEPLOY_ARG: ${DEPLOY_ENV}
+        OPCACHE_ENABLE: 0
+        PHP_OPCACHE_ENABLE: 0
+        PHP_OPCACHE_CLI_ENABLE: 0
+        XDEBUG_ENABLE: 1
+    environment:
+      PHP_IDE_CONFIG: serverName=localhost
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./Api:/var/www
+    depends_on:
+      - postgresql
+    networks:
+      - bridge-network
+
+  postgresql:
+    container_name: ${PROJECT_NAME}-postgresql
+    image: postgres:16.2-alpine3.19
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_USER: ${POSTGRES_USER}
+    volumes:
+      - ./data/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - '5439:5432'
+    networks:
+      - bridge-network
+
+networks:
+  bridge-network:
+    name: ${PROJECT_NAME}-network
+    driver: bridge
