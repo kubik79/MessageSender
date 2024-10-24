@@ -9,8 +9,6 @@ CREATE TABLE users
     name   VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX idx_number ON users (number);
-
 CREATE TABLE mailings
 (
     id    SERIAL PRIMARY KEY,

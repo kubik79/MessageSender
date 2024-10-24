@@ -11,9 +11,11 @@ class AbstractRepository
 {
     protected PDO $db;
 
+    /**
+     * @throws \Exception
+     */
     public function __construct()
     {
-        $database = new Database();
-        $this->db = $database->connect();
+        $this->db = Database::connect();
     }
 }
